@@ -14,30 +14,52 @@ library(leaflet)
 source("fetch-data.R")
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(
+# ui <- fluidPage(
+# 
+#  
+# 
+#     # Sidebar with a slider input for number of bins 
+#     sidebarLayout(
+#         sidebarPanel(
+#             sliderInput("circonference",
+#                         "Circonference in centimeters",
+#                         min = 0,
+#                         max = 400,
+#                         value = c(0,400)),
+#             sliderInput("height",
+#                         "Height in meters",
+#                         min = 0,
+#                         max = 30,
+#                         value = c(0,30))
+#         ),
+# 
+#         # Show a plot of the generated distribution
+#         mainPanel(
+#            leafletOutput("treesmap")
+#         )
+#     )
+# )
 
-    # Application title
-    titlePanel("The Trees of Paris"),
-
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("circonference",
-                        "Circonference in centimeters",
-                        min = 0,
-                        max = 400,
-                        value = c(0,400)),
-            sliderInput("height",
-                        "Height in meters",
-                        min = 0,
-                        max = 30,
-                        value = c(0,30))
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           leafletOutput("treesmap")
-        )
+ui <- bootstrapPage(
+    tags$style(type = "text/css", "
+    html,body {width:100%;height:100%}
+    #controls {
+        background-color: #f8f8ff;
+        padding : 10px;
+        border-radius: 5%;
+      }"),
+    leafletOutput("treesmap", width = "100%", height = "100%"),
+    absolutePanel(top = 10, right = 10, id = "controls",
+                  sliderInput("circonference",
+                              "Circonference in centimeters",
+                              min = 0,
+                              max = 400,
+                              value = c(0,400)),
+                  sliderInput("height",
+                              "Height in meters",
+                              min = 0,
+                              max = 30,
+                              value = c(0,30))
     )
 )
 
@@ -59,7 +81,7 @@ server <- function(input, output) {
     
     translateRadius <- function(circonf) {
         circonf*10/400 + 1
-    }○
+    }
     
     output$treesmap <- renderLeaflet({
         leaflet(userTrees()) %>% setView(lng = 2.2952842712402344,
@@ -69,6 +91,11 @@ server <- function(input, output) {
                              color = ~pal(HAUTEUR..m.),
                              radius = ~translateRadius(CIRCONFERENCE..cm.),
                              stroke = FALSE
+            ) %>%
+            addLegend("bottomright", pal = pal, values = ~HAUTEUR..m.,
+                      title = "Tree Height",
+                      labFormat = labelFormat(suffix = "m"),
+                      opacity = 1
             )
     })
     
